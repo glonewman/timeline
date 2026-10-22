@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Engrain Project Timeline</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+ --bg:#F4F6F5; --surface:#FFFFFF; --sunk:#EDF0EE; --ink:#1B2220; --muted:#5C6864; --line:#DCE1DE;
+ --accent:#1E5C58; --accent-ink:#FFFFFF;
+ --p1:#4A74A8; --p2:#8A68BD; --p3:#2E8A73;
+ --hol:#C98326; --hol-bg:rgba(201,131,38,.14); --warn:#9A5B0C;
+ --radius:10px;
+ --sans:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+ :root:not([data-theme="light"]){
+ color-scheme:dark;
+ --bg:#111615; --surface:#191F1E; --sunk:#141A19; --ink:#E4EBE9; --muted:#98A5A1; --line:#2B3432;
+ --accent:#6FC2BA; --accent-ink:#0E1413;
+ --p1:#7FA3D6; --p2:#B495E3; --p3:#5DC0A5;
+ --hol:#E6A54F; --hol-bg:rgba(230,165,79,.16); --warn:#E6A54F;
+ }
+}
+:root[data-theme="dark"]{
+ color-scheme:dark;
+ --bg:#111615; --surface:#191F1E; --sunk:#141A19; --ink:#E4EBE9; --muted:#98A5A1; --line:#2B3432;
+ --accent:#6FC2BA; --accent-ink:#0E1413;
+ --p1:#7FA3D6; --p2:#B495E3; --p3:#5DC0A5;
+ --hol:#E6A54F; --hol-bg:rgba(230,165,79,.16); --warn:#E6A54F;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:32px 64px;display:flex;flex-direction:column;gap:20px}
+h1{font-size:28px;font-weight:700;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h2{font-size:17px;font-weight:600;margin:0}
+.lede{color:var(--muted);margin:6px 0 0;max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.label{font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+button,input{font:inherit;color:inherit}
+input[type=date],input[type=text],input[type=number]{background:var(--sunk);border:1px solid var(--line);border-radius:7px;padding:8px 10px;min-width:0}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:7px;padding:9px 14px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:5px 10px;font-size:13px}
+.icon-btn{background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:18px;line-height:1}
+.icon-btn:hover{color:var(--ink);background:var(--sunk)}
+/* controls */
+.controls{display:grid;grid-template-columns:1.1fr 1fr;gap:24px}
+.ctl{display:flex;flex-direction:column;gap:10px}
+.seg{display:inline-flex;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.phase-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.phase-inputs label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.phase-inputs input{width:100%}
+.add-row{display:flex;gap:8px;flex-wrap:wrap}
+.add-row input[type=text]{flex:1 1 160px}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+.target{margin:0;padding:10px 12px;border-radius:8px;background:var(--sunk);font-size:14px}
+.target strong{color:var(--accent)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+/* gantt */
+.gantt-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw-pad{width:16px;height:10px;border-radius:3px;background:repeating-linear-gradient(135deg,var(--muted) 0 2px,transparent 2px 5px);opacity:.7}
+.sw-hol{width:10px;height:10px;border-radius:2px;background:var(--hol)}
+.gantt-scroll{overflow-x:auto}
+.gantt{min-width:680px;display:grid;grid-template-columns:190px 1fr;row-gap:10px}
+.g-name{font-size:13px;font-weight:600;align-self:center;padding-right:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-name small{display:block;font-weight:400;color:var(--muted);font-family:var(--mono);font-size:11.5px}
+.g-track{position:relative;height:30px;background:var(--sunk);border-radius:6px}
+.g-axis{position:relative;height:22px}
+.g-tick{position:absolute;top:0;font-size:11px;color:var(--muted);font-family:var(--mono);transform:translateX(2px);white-space:nowrap}
+.g-tick::before{content:"";position:absolute;left:-2px;top:0;height:6px;border-left:1px solid var(--line)}
+.g-grid{position:absolute;top:0;bottom:0;border-left:1px dashed var(--line)}
+.g-hol{position:absolute;top:0;bottom:0;background:var(--hol-bg);border-left:1px solid var(--hol)}
+.g-seg{position:absolute;top:5px;height:20px;border-radius:4px}
+.g-pad{position:absolute;top:5px;height:20px;border-radius:0 4px 4px 0;background:repeating-linear-gradient(135deg,currentColor 0 2px,transparent 2px 5px);opacity:.75}
+.g-end{position:absolute;top:-3px;bottom:-3px;border-left:2px solid var(--ink)}
+/* scenarios */
+.scen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.scen{display:flex;flex-direction:column;gap:14px}
+.scen-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.scen-title{font-weight:600;font-size:16px;border:0;background:transparent;padding:2px 4px;margin-left:-4px;border-radius:5px;width:100%}
+.scen-title:hover{background:var(--sunk)}
+.scen-start{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.scen-start input{padding:3px 6px;font-size:13px}
+.result{display:flex;flex-direction:column;gap:2px;padding:12px 14px;background:var(--sunk);border-radius:8px}
+.result .big{font-size:24px;font-weight:700;letter-spacing:-.01em}
+.result .sub{font-size:13px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--hol-bg);color:var(--warn)}
+.pill.ok{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
+.phases{display:flex;flex-direction:column}
+.ph{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line);align-items:baseline}
+.ph:first-child{border-top:0;padding-top:0}
+.ph .dot{align-self:center}
+.ph-name{font-weight:500}
+.ph-w{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.ph-dates{grid-column:2/4;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.ph-note{grid-column:2/4;font-size:12.5px;color:var(--warn)}
+.flag{font-size:12.5px;color:var(--warn);margin:0}
+/* holidays */
+.hol-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.status{font-size:13px;color:var(--muted)}
+.status.warn{color:var(--warn)}
+.hol-table-wrap{overflow-x:auto;margin-top:14px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--line)}
+td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr.past td{color:var(--muted)}
+td.act{text-align:right;width:40px}
+a{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.empty{color:var(--muted);text-align:center;padding:24px}
+/* share */
+.share{display:flex;flex-direction:column;gap:12px}
+.share-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.share-row input[type=text]{flex:1 1 220px}
+.share-link{width:100%;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+.foot{font-size:13px;color:var(--muted);text-align:center}
+body.client .edit-only{display:none!important}
+body.client .scen-title,body.client .scen-start input{pointer-events:none;background:transparent;border-color:transparent}
+body.client .scen-start input{padding-left:0;-webkit-appearance:none;appearance:none}
+body.client .scen-start input::-webkit-calendar-picker-indicator{display:none}
+@media print{.edit-only,.foot{display:none!important}body{background:#fff}.card{break-inside:avoid}}
+@media (max-width:760px){
+ .controls{grid-template-columns:1fr}
+ .scen-grid{grid-template-columns:1fr}
+ h1{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <header>
+ <p class="eyebrow" id="eyebrow" hidden></p>
+ <h1 id="title">Engrain Project Timeline</h1>
+ <p class="lede" id="lede">Pick one or more start dates to see when each phase lands. Phases run back to back in full calendar weeks, and every company holiday that falls on a weekday pushes the schedule out by one working day.</p>
+ </header>
+ <section class="card share edit-only" aria-label="Share with client">
+ <div>
+ <h2>Share with a client</h2>
+ <p class="hint">Set up the timelines below, add the client's name, then copy the link and send it. The client sees a read-only version with these exact settings.</p>
+ </div>
+ <div class="share-row">
+ <input type="text" id="clientName" placeholder="Client name" aria-label="Client name">
+ <button class="btn" type="button" id="copyLink">Copy client link</button>
+ <a class="btn ghost" id="previewLink" href="#" target="_blank" rel="noopener" style="text-decoration:none">Preview</a>
+ </div>
+ <input type="text" class="share-link" id="shareLink" readonly aria-label="Client link">
+ </section>
+ <section class="card controls edit-only" aria-label="Settings">
+ <div class="ctl">
+ <span class="label">Phase lengths</span>
+ <div class="seg" role="group" aria-label="Duration scenario">
+ <button type="button" data-mode="max" aria-pressed="true">Max · 21 wks</button>
+ <button type="button" data-mode="min" aria-pressed="false">Min · 15 wks</button>
+ <button type="button" data-mode="custom" aria-pressed="false">Custom</button>
+ </div>
+ <div class="phase-inputs" id="phaseInputs"></div>
+ </div>
+ <div class="ctl">
+ <span class="label">Add a start date</span>
+ <form class="add-row" id="addForm">
+ <input type="date" id="newDate" required aria-label="Start date">
+ <input type="text" id="newLabel" placeholder="Label (optional)" aria-label="Scenario label">
+ <button class="btn" type="submit">Add</button>
+ </form>
+ <p class="target" id="target"></p>
+ <p class="hint">Weekend or holiday start dates roll forward to the next working day. Start dates that would push launch into May can't be added.</p>
+ </div>
+ </section>
+ <section class="card" aria-label="Timeline comparison">
+ <div class="gantt-head">
+ <h2>Timeline comparison</h2>
+ <div class="legend" id="legend"></div>
+ </div>
+ <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
+ </section>
+ <section class="scen-grid" id="scenarios" aria-label="Scenarios"></section>
+ <section class="card" id="holidays" aria-label="Company holidays">
+ <div class="hol-head">
+ <div>
+ <h2>Company holidays</h2>
+ <p class="status" id="holStatus"></p>
+ </div>
+ </div>
+ <div class="hol-table-wrap">
+ <table>
+ <thead><tr><th>Holiday</th><th>Date</th><th>Workdays</th><th></th></tr></thead>
+ <tbody id="holBody"></tbody>
+ </table>
+ </div>
+ </section>
+ <p class="foot" id="foot"></p>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(() => {
+const DAY = 86400000;
+const PHASES = [
+ { name: "Discovery & Strategy", min: 2, max: 3, color: "var(--p1)" },
+ { name: "Design", min: 4, max: 6, color: "var(--p2)" },
+ { name: "Development", min: 9, max: 12, color: "var(--p3)" },
+];
+const HOLIDAYS = [
+ { name: "Thanksgiving", start: "2026-11-26", end: "2026-11-27" },
+ { name: "Christmas Eve", start: "2026-12-24", end: "2026-12-24" },
+ { name: "Christmas Day", start: "2026-12-25", end: "2026-12-25" },
+ { name: "New Year's Day", start: "2027-01-01", end: "2027-01-01" },
+ { name: "Martin Luther King Jr. Day", start: "2027-01-18", end: "2027-01-18" },
+ { name: "Presidents' Day", start: "2027-02-15", end: "2027-02-15" },
+ { name: "Memorial Day", start: "2027-05-31", end: "2027-05-31" },
+];
+const toDay = iso => { const [y, m, d] = iso.split("-").map(Number); return Math.round(Date.UTC(y, m - 1, d) / DAY); };
+const toISO = n => new Date(n * DAY).toISOString().slice(0, 10);
+const dow = n => new Date(n * DAY).getUTCDay();
+const fmt = (n, o) => new Date(n * DAY).toLocaleDateString("en-US", Object.assign({ timeZone: "UTC" }, o));
+const fLong = n => fmt(n, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+const fMid = n => fmt(n, { weekday: "short", month: "short", day: "numeric" });
+const fShort = n => fmt(n, { month: "short", day: "numeric" });
+const todayDay = (() => { const t = new Date(); return Math.round(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) / DAY); })();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+ 
+// ---------- per-viewer settings (browser storage; silently skipped if the widget frame blocks it) ----------
+const LS = "engrain-timeline-client-v2";
+function loadLocal() { try { return JSON.parse(localStorage.getItem(LS)) || null; } catch (e) { return null; } }
+let saveLocal = function () { try { localStorage.setItem(LS, JSON.stringify({ mode: state.mode, custom: state.custom, client: state.client, scenarios: state.scenarios })); } catch (e) {} updateShare(); };
+// ---------- settings carried in the link ----------
+// ?client=Acme&mode=custom&w=3,6,12&s=2026-11-02~Label&s=2026-11-16~Label   (add &edit=1 to open in the editor)
+function fromURL() {
+ const q = new URLSearchParams(location.search);
+ const starts = q.getAll("s").map((v, i) => ({ id: "u" + i, start: v.slice(0, 10), label: v.slice(11) }))
+ .filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x.start));
+ if (!starts.length) return null;
+ const mode = ["max", "min", "custom"].includes(q.get("mode")) ? q.get("mode") : "max";
+ let custom = (q.get("w") || "").split(",").map(n => Math.max(0, Math.min(52, parseInt(n, 10) || 0)));
+ if (custom.length !== 3) custom = [3, 6, 12];
+ return { client: (q.get("client") || "").trim(), mode, custom, scenarios: starts, edit: q.get("edit") === "1" };
+}
+function toURL(edit) {
+ const q = new URLSearchParams();
+ const client = $("clientName").value.trim();
+ if (client) q.set("client", client);
+ q.set("mode", state.mode);
+ if (state.mode === "custom") q.set("w", weeks().join(","));
+ state.scenarios.slice().sort((a, b) => a.start.localeCompare(b.start))
+ .forEach(sc => q.append("s", sc.start + (sc.label ? "~" + sc.label : "")));
+ if (edit) q.set("edit", "1");
+ return location.origin + location.pathname + "?" + q.toString().replace(/\+/g, "%20").replace(/%2C/g, ",").replace(/%7E/g, "~").replace(/%3A/g, ":");
+}
+const linked = fromURL();
+const CLIENT_VIEW = !!linked && !linked.edit;
+const saved = linked || loadLocal();
+if (CLIENT_VIEW) saveLocal = () => {}; // never overwrite the account manager's saved work from a client link
+const state = {
+ mode: (saved && saved.mode) || "max",
+ custom: (saved && saved.custom) || [3, 6, 12],
+ client: (saved && saved.client) || "",
+ scenarios: (saved && saved.scenarios) || [
+ { id: "s1", label: "Example: early November", start: "2026-11-02" },
+ { id: "s2", label: "Example: mid November", start: "2026-11-16" },
+ { id: "s3", label: "Example: latest start", start: "2026-11-30" },
+ ],
+ holidays: HOLIDAYS,
+};
+ 
+// ---------- holiday calendar ----------
+let hmap = new Map();
+function buildHolidayMap() {
+ hmap = new Map();
+ for (const h of state.holidays) {
+ const a = toDay(h.start), b = toDay(h.end || h.start);
+ for (let d = a; d <= b; d++) {
+ const w = dow(d);
+ if (w === 0 || w === 6) continue;
+ hmap.set(d, hmap.has(d) ? hmap.get(d) + " / " + h.name : h.name);
+ }
+ }
+}
+const isWork = d => { const w = dow(d); return w !== 0 && w !== 6 && !hmap.has(d); };
+const nextWork = d => { while (!isWork(d)) d++; return d; };
+const prevWork = d => { while (!isWork(d)) d--; return d; };
+function weeks() {
+ if (state.mode === "min") return PHASES.map(p => p.min);
+ if (state.mode === "max") return PHASES.map(p => p.max);
+ return state.custom.map(n => Math.max(0, Number(n) || 0));
+}
+// Phases run back to back. Each weekday holiday inside a phase adds one working day
+// to its end; holidays hit during that extension are skipped too.
+function schedule(startIso) {
+ const req = toDay(startIso);
+ const w = weeks();
+ let s = req;
+ const startHits = [];
+ while (!isWork(s)) { if (hmap.has(s)) startHits.push(s); s++; }
+ const rollStart = s !== req;
+ const phases = [];
+ w.forEach((wk, i) => {
+ const hits = [];
+ const pushed = [];
+ if (i > 0) { let g = s; while (!isWork(g)) { if (hmap.has(g)) pushed.push(g); g++; } s = g; }
+ const nomEnd = s + 7 * wk;
+ for (let d = s; d < nomEnd; d++) if (hmap.has(d)) hits.push(d);
+ let pad = hits.length, d = nomEnd;
+ while (pad > 0) { if (isWork(d)) pad--; else if (hmap.has(d)) hits.push(d); d++; }
+ const end = d;
+ phases.push({ i, wk, start: s, nomEnd, end, last: wk > 0 ? prevWork(end - 1) : s, hits, pushed });
+ s = end;
+ });
+ const last = phases[phases.length - 1];
+ const totalWeeks = w.reduce((a, b) => a + b, 0);
+ const delay = last.end - (req + 7 * totalWeeks);
+ const allHits = [...startHits, ...phases.flatMap(p => [...p.pushed, ...p.hits])];
+ return { req, rollStart, phases, last, totalWeeks, delay, allHits };
+}
+ 
+// ---------- rendering ----------
+const $ = id => document.getElementById(id);
+function renderControls() {
+ document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
+ const w = weeks();
+ $("phaseInputs").innerHTML = PHASES.map((p, i) => `
+ <label><span style="display:flex;align-items:center;gap:6px"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>
+ <input type="number" min="0" max="52" step="1" id="wk${i}" value="${w[i]}" ${state.mode === "custom" ? "" : "disabled"} aria-label="${esc(p.name)} weeks">
+ <span style="font-size:12px">${p.min}–${p.max} wks quoted</span>
+ </label>`).join("");
+ PHASES.forEach((_, i) => $("wk" + i).addEventListener("input", e => {
+ state.custom[i] = Math.max(0, Math.min(52, parseInt(e.target.value, 10) || 0));
+ saveLocal(); renderResults();
+ }));
+ $("legend").innerHTML = PHASES.map(p => `<span><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`).join("")
+ + `<span><span class="sw-pad"></span>Holiday padding</span><span><span class="sw-hol"></span>Holiday</span>`;
+}
+function hitSummary(days) {
+ const names = [];
+ for (const d of days) { const n = hmap.get(d); if (n && !names.includes(n)) names.push(n); }
+ return names.join(", ");
+}
+function renderScenarios(results) {
+ const box = $("scenarios");
+ if (!state.scenarios.length) { box.innerHTML = `<div class="card empty" style="grid-column:1/-1">Add a start date above to see its timeline.</div>`; return; }
+ box.innerHTML = results.map(({ sc, r }) => {
+ const hd = r.allHits.length;
+ const pill = hd ? `<span class="pill">+${r.delay} calendar day${r.delay === 1 ? "" : "s"} · ${hd} holiday${hd === 1 ? "" : "s"}</span>` : `<span class="pill ok">No holidays in range</span>`;
+ return `<article class="card scen" data-id="${esc(sc.id)}">
+ <div class="scen-top">
+ <div style="flex:1;min-width:0">
+ <input class="scen-title" id="lbl-${esc(sc.id)}" value="${esc(sc.label || (CLIENT_VIEW ? "Start " + fShort(r.req) : "Untitled scenario"))}" aria-label="Scenario name" ${CLIENT_VIEW ? "readonly tabindex=-1" : ""}>
+ <div class="scen-start">Starts ${CLIENT_VIEW ? `<strong>${fLong(r.req)}</strong>` : `<input type="date" id="st-${esc(sc.id)}" value="${esc(sc.start)}" aria-label="Start date">`}</div>
+ </div>
+ <button class="icon-btn edit-only" data-remove="${esc(sc.id)}" aria-label="Remove scenario" title="Remove">×</button>
+ </div>
+ <div class="result">
+ <span class="label">Development wraps</span>
+ <span class="big">${fLong(r.last.last)}</span>
+ <span class="sub">${r.totalWeeks} weeks + holiday padding</span>
+ <div style="margin-top:6px">${pill}</div>
+ </div>
+ ${r.last.last > TARGET_LAST && !CLIENT_VIEW ? `<p class="flag">Wraps after April. Move the start date earlier.</p>` : ""}
+ ${r.rollStart ? `<p class="flag">Start rolls forward to ${fMid(r.phases[0].start)} (weekend or holiday).</p>` : ""}
+ <div class="phases">
+ ${r.phases.map((p, i) => {
+ const extra = p.end - p.nomEnd;
+ const notes = [];
+ if (p.pushed.length) notes.push(`Starts after ${hitSummary(p.pushed)}`);
+ if (p.hits.length) notes.push(`+${extra} day${extra === 1 ? "" : "s"} for ${hitSummary(p.hits)}`);
+ return `<div class="ph">
+ <span class="dot" style="background:${PHASES[i].color}"></span>
+ <span class="ph-name">${esc(PHASES[i].name)}</span>
+ <span class="ph-w">${p.wk} wk${p.wk === 1 ? "" : "s"}</span>
+ <span class="ph-dates">${fMid(p.start)} → ${fMid(p.last)}</span>
+ ${notes.length ? `<span class="ph-note">${esc(notes.join(" · "))}</span>` : ""}
+ </div>`;
+ }).join("")}
+ </div>
+ </article>`;
+ }).join("");
+ box.querySelectorAll("[data-remove]").forEach(b => b.addEventListener("click", () => {
+ state.scenarios = state.scenarios.filter(s => s.id !== b.dataset.remove); saveLocal(); renderResults();
+ }));
+ if (CLIENT_VIEW) return;
+ state.scenarios.forEach(sc => {
+ const lbl = $("lbl-" + sc.id), st = $("st-" + sc.id);
+ if (!lbl || !st) return;
+ lbl.addEventListener("change", e => { sc.label = e.target.value.trim(); saveLocal(); renderGanttOnly(); });
+ st.addEventListener("change", e => {
+ if (!e.target.value) return;
+ if (!endsBy(e.target.value)) { e.target.value = sc.start; toast("That start date would push launch into May."); return; }
+ sc.start = e.target.value; saveLocal(); renderResults();
+ });
+ });
+}
+let lastResults = [];
+function renderGantt(results) {
+ const g = $("gantt");
+ if (!results.length) { g.innerHTML = `<div class="empty" style="grid-column:1/-1">No scenarios yet.</div>`; return; }
+ const lo = Math.min(...results.map(x => x.r.req)) - 3;
+ const hi = Math.max(...results.map(x => x.r.last.end)) + 7;
+ const span = hi - lo;
+ const pct = d => ((d - lo) / span * 100).toFixed(3) + "%";
+ const wid = (a, b) => (Math.max(0, b - a) / span * 100).toFixed(3) + "%";
+ const ticks = [];
+ const s = new Date(lo * DAY);
+ const y = s.getUTCFullYear();
+ for (let m = s.getUTCMonth() + 1; ; m++) {
+ const d = Math.round(Date.UTC(y, m, 1) / DAY);
+ if (d >= hi) break;
+ ticks.push(d);
+ }
+ const monthLabel = d => fmt(d, ticks.length > 8 ? { month: "short" } : { month: "short", year: "2-digit" });
+ const grid = ticks.map(t => `<span class="g-grid" style="left:${pct(t)}"></span>`).join("");
+ const hols = [...hmap.keys()].filter(d => d >= lo && d < hi)
+ .map(d => `<span class="g-hol" style="left:${pct(d)};width:${wid(d, d + 1)}" title="${esc(hmap.get(d))} · ${fMid(d)}"></span>`).join("");
+ let html = `<span></span><div class="g-axis">${ticks.map(t => `<span class="g-tick" style="left:${pct(t)}">${monthLabel(t)}</span>`).join("")}</div>`;
+ for (const { sc, r } of results) {
+ const segs = r.phases.map((p, i) => {
+ const c = PHASES[i].color;
+ const tip = `${PHASES[i].name}: ${fMid(p.start)} – ${fMid(p.last)}`;
+ return `<span class="g-seg" style="left:${pct(p.start)};width:${wid(p.start, p.nomEnd)};background:${c}" title="${esc(tip)}"></span>`
+ + (p.end > p.nomEnd ? `<span class="g-pad" style="left:${pct(p.nomEnd)};width:${wid(p.nomEnd, p.end)};color:${c}" title="${esc("Holiday padding: " + hitSummary(p.hits))}"></span>` : "");
+ }).join("");
+ html += `<div class="g-name" title="${esc(sc.label || "")}">${esc(sc.label || "Untitled")}<small>${fShort(r.req)} → ${fShort(r.last.last)}</small></div>
+ <div class="g-track">${grid}${hols}${segs}<span class="g-end" style="left:${pct(r.last.last + 1)}" title="Wraps ${fLong(r.last.last)}"></span></div>`;
+ }
+ g.innerHTML = html;
+}
+function renderGanttOnly() { lastResults = computeAll(); renderGantt(lastResults); }
+function computeAll() {
+ return state.scenarios.filter(sc => /^\d{4}-\d{2}-\d{2}$/.test(sc.start))
+ .slice().sort((a, b) => a.start.localeCompare(b.start))
+ .map(sc => ({ sc, r: schedule(sc.start) }));
+}
+// Launch target: everything must wrap by the end of April 2027.
+const TARGET_LAST = toDay("2027-04-30");
+const TARGET_FIRST = toDay("2027-04-01");
+const endsBy = iso => schedule(iso).last.last <= TARGET_LAST;
+function launchWindow() {
+ let latest = null, earliest = null;
+ for (let d = TARGET_LAST; d > todayDay; d--) {
+ const l = schedule(toISO(d)).last.last;
+ if (latest === null && l <= TARGET_LAST && isWork(d)) latest = d;
+ if (latest !== null && l < TARGET_FIRST) break;
+ if (latest !== null && isWork(d)) earliest = d;
+ }
+ return { latest, earliest };
+}
+function renderTarget() {
+ const { latest, earliest } = launchWindow();
+ const el = $("target");
+ if (latest === null) { el.innerHTML = "These phase lengths can't wrap by the end of April 2027 from today."; $("newDate").removeAttribute("max"); return; }
+ el.innerHTML = `Target launch: <strong>April 2027</strong>. Start between <strong>${fMid(earliest)}</strong> and <strong>${fLong(latest)}</strong> to launch in April.`;
+ $("newDate").max = toISO(latest);
+ if ($("newDate").value > toISO(latest)) $("newDate").value = toISO(latest);
+}
+function renderResults() {
+ renderTarget();
+ lastResults = computeAll();
+ renderGantt(lastResults);
+ renderScenarios(lastResults);
+}
+function renderHolidays() {
+ $("holStatus").textContent = "Engrain company holidays as of October 2, 2026. Weekday holidays add a working day to the phase they fall in.";
+ const rows = state.holidays.slice().sort((a, b) => a.start.localeCompare(b.start));
+ const upcoming = rows.filter(h => toDay(h.end || h.start) >= todayDay - 30);
+ $("holBody").innerHTML = upcoming.length ? upcoming.map(h => {
+ const a = toDay(h.start), b = toDay(h.end || h.start);
+ let wd = 0; for (let d = a; d <= b; d++) { const w = dow(d); if (w && w !== 6) wd++; }
+ const past = b < todayDay;
+ return `<tr class="${past ? "past" : ""}">
+ <td>${esc(h.name)}</td>
+ <td class="num">${a === b ? fLong(a) : `${fMid(a)} – ${fLong(b)}`}</td>
+ <td class="num">${wd || "weekend"}</td>
+ <td class="act"></td>
+ </tr>`;
+ }).join("") : `<tr><td colspan="4" class="empty">No upcoming holidays.</td></tr>`;
+}
+function renderAll() { buildHolidayMap(); renderControls(); renderResults(); renderHolidays(); }
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2600); }
+ 
+// ---------- sharing ----------
+function updateShare() {
+ if (CLIENT_VIEW || !$("shareLink")) return;
+ const url = toURL(false);
+ $("shareLink").value = url;
+ $("previewLink").href = url;
+}
+$("clientName").value = state.client;
+$("clientName").addEventListener("input", e => { state.client = e.target.value.trim(); saveLocal(); });
+$("copyLink").addEventListener("click", async () => {
+ if (!state.scenarios.length) { toast("Add at least one start date first."); return; }
+ const url = toURL(false);
+ try { await navigator.clipboard.writeText(url); toast("Client link copied."); }
+ catch (e) { const f = $("shareLink"); f.focus(); f.select(); toast("Press Ctrl+C / ⌘C to copy the selected link."); }
+});
+function applyView() {
+ if (!CLIENT_VIEW) {
+ $("foot").innerHTML = "";
+ return;
+ }
+ document.body.classList.add("client");
+ const name = state.client;
+ if (name) { $("eyebrow").textContent = name; $("eyebrow").hidden = false; document.title = name + " · Project Timeline"; }
+ $("title").textContent = "Project Timeline";
+ $("lede").textContent = state.scenarios.length > 1
+ ? "Each card below is one possible start date. Phases run back to back in full calendar weeks, and company holidays that fall on a weekday add a working day to the schedule."
+ : "Phases run back to back in full calendar weeks, and company holidays that fall on a weekday add a working day to the schedule.";
+ const q = new URLSearchParams(location.search); q.set("edit", "1");
+ $("foot").innerHTML = `Prepared by Engrain · <a href="${esc(location.pathname + "?" + q.toString())}">Open a copy in the editor</a>`;
+}
+ 
+// ---------- events ----------
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+ state.mode = b.dataset.mode; saveLocal(); renderControls(); renderResults();
+}));
+$("addForm").addEventListener("submit", e => {
+ e.preventDefault();
+ const start = $("newDate").value; if (!start) return;
+ if (!endsBy(start)) { toast("That start date would push launch into May. Pick an earlier date."); return; }
+ const label = $("newLabel").value.trim() || `Start ${fShort(toDay(start))}`;
+ state.scenarios.push({ id: "s" + Date.now().toString(36), label, start });
+ $("newLabel").value = ""; saveLocal(); renderResults();
+});
+buildHolidayMap();
+$("newDate").value = toISO(nextWork(todayDay + 14));
+applyView();
+renderAll();
+updateShare();
+})();
+</script>
+</body>
+</html>
+ 
